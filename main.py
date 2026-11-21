@@ -49,6 +49,20 @@ def main() -> int:
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
 
+    # Verify the write round-trip: what landed on disk must be byte-for-byte
+    # the poem we validated above, so a partial or corrupted write can never
+    # pass silently as a valid entry.
+    with open(OUTPUT_PATH, "r", encoding="utf-8", newline="\n") as f:
+        written = f.read()
+    if written != text:
+        print("verification failed: entry on disk differs from the poem",
+              file=sys.stderr)
+        return 1
+    if not MIN_CHARS <= len(written) <= MAX_CHARS:
+        print("verification failed: entry on disk outside "
+              f"{MIN_CHARS}-{MAX_CHARS} characters", file=sys.stderr)
+        return 1
+
     print(f"wrote {chars} characters to {OUTPUT_PATH}")
     return 0
 
